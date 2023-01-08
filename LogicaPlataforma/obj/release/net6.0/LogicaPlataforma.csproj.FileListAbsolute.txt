@@ -1,0 +1,15 @@
+C:\Users\User\OneDrive\Desktop\proyectos\Utilitarios\Restaurante-Ronald\backend\LogicaPlataforma\obj\release\net6.0\LogicaPlataforma.csproj.AssemblyReference.cache
+C:\Users\User\OneDrive\Desktop\proyectos\Utilitarios\Restaurante-Ronald\backend\LogicaPlataforma\obj\release\net6.0\LogicaPlataforma.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\User\OneDrive\Desktop\proyectos\Utilitarios\Restaurante-Ronald\backend\LogicaPlataforma\obj\release\net6.0\LogicaPlataforma.AssemblyInfoInputs.cache
+C:\Users\User\OneDrive\Desktop\proyectos\Utilitarios\Restaurante-Ronald\backend\LogicaPlataforma\obj\release\net6.0\LogicaPlataforma.AssemblyInfo.cs
+C:\Users\User\OneDrive\Desktop\proyectos\Utilitarios\Restaurante-Ronald\backend\LogicaPlataforma\obj\release\net6.0\LogicaPlataforma.csproj.CoreCompileInputs.cache
+C:\Users\User\OneDrive\Desktop\proyectos\Utilitarios\Restaurante-Ronald\backend\LogicaPlataforma\bin\release\net6.0\LogicaPlataforma.deps.json
+C:\Users\User\OneDrive\Desktop\proyectos\Utilitarios\Restaurante-Ronald\backend\LogicaPlataforma\bin\release\net6.0\LogicaPlataforma.dll
+C:\Users\User\OneDrive\Desktop\proyectos\Utilitarios\Restaurante-Ronald\backend\LogicaPlataforma\bin\release\net6.0\LogicaPlataforma.pdb
+C:\Users\User\OneDrive\Desktop\proyectos\Utilitarios\Restaurante-Ronald\backend\LogicaPlataforma\bin\release\net6.0\DataAccess.dll
+C:\Users\User\OneDrive\Desktop\proyectos\Utilitarios\Restaurante-Ronald\backend\LogicaPlataforma\bin\release\net6.0\DataAccess.pdb
+C:\Users\User\OneDrive\Desktop\proyectos\Utilitarios\Restaurante-Ronald\backend\LogicaPlataforma\obj\release\net6.0\LogicaPlataforma.csproj.CopyComplete
+C:\Users\User\OneDrive\Desktop\proyectos\Utilitarios\Restaurante-Ronald\backend\LogicaPlataforma\obj\release\net6.0\LogicaPlataforma.dll
+C:\Users\User\OneDrive\Desktop\proyectos\Utilitarios\Restaurante-Ronald\backend\LogicaPlataforma\obj\release\net6.0\refint\LogicaPlataforma.dll
+C:\Users\User\OneDrive\Desktop\proyectos\Utilitarios\Restaurante-Ronald\backend\LogicaPlataforma\obj\release\net6.0\LogicaPlataforma.pdb
+C:\Users\User\OneDrive\Desktop\proyectos\Utilitarios\Restaurante-Ronald\backend\LogicaPlataforma\obj\release\net6.0\ref\LogicaPlataforma.dll
