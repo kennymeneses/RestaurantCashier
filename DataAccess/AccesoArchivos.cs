@@ -12,11 +12,8 @@ namespace DataAccess
 
         public ISheet ObtenertHistorialdeLiquidacionActual()
         {
-            string year = DateTime.Now.Year.ToString();
-            string month = DateTime.Now.Month.ToString();
-            string previousMonth = ObtenerMesPrevio();
-            string nameFile = "LIQUIDACION"+previousMonth + "-" + month+".xlsx";
-            string path = Constantes.rutaLiquidaciones +year+"/"+nameFile;
+            string nameFile = "LIQUIDACION" + GetMonths() + ".xlsx";
+            string path = Constantes.rutaLiquidaciones +GetYear()+"/"+nameFile;
             
             ISheet worksheet = null;
             try
@@ -40,58 +37,50 @@ namespace DataAccess
                 throw;
             }
         }
-
-        //obtener archivo a Escribir
-
-        public ISheet ObtenerExcelParaRegistrar()
+       
+        private string GetMonths()
         {
-            string year = DateTime.Now.Year.ToString();
-            string month = DateTime.Now.Month.ToString();
-            string previousMonth = ObtenerMesPrevio();
-            string nameFile = "LIQUIDACIONDEMO1.xlsx";
-            string path = Constantes.rutaLiquidaciones + year + "/" + nameFile;
+            //validacion si hoy es mayor al dia 15
+            // esto debe entregar por ejemplo 12-1 o 1-2
 
-            ISheet worksheet = null;
+            //validar tb el año
 
-            try
+            int day = DateTime.Now.Day;
+            int december = 12;
+            int month = DateTime.Now.Month;
+
+            string response = string.Empty;
+
+            if (month == 1 && day <= 15)
             {
-                if (System.IO.File.Exists(path))
-                {
-                    IWorkbook workbook = null;
-
-
-                    //FileMode.Create, FileAccess.Write This combination doesnt support for write new data and remove all data
-                    using (FileStream FS = new FileStream(path, FileMode.Open, FileAccess.Read))
-                    {
-                        workbook = WorkbookFactory.Create(FS); 
-                        worksheet = workbook.GetSheetAt(0);
-                    }
-
-                    //XSSFWorkbook wb1 = null;
-                    //using (var file = new FileStream(path, FileMode.Open, FileAccess.ReadWrite))
-                    //{
-                    //    wb1 = new XSSFWorkbook(file);                        
-                    //}
-                    //wb1.GetSheetAt(0).GetRow(wb1.Count+1).GetCell(0).SetCellValue("Sample");
-
-                    //using (var file2 = new FileStream(path, FileMode.Create, FileAccess.ReadWrite))
-                    //{
-                    //    wb1.Write(file2);
-                    //    file2.Close();
-                    //}
-
-
-                    return worksheet;
-                }
-                
-
-
-                return worksheet;
+                response = december.ToString() + "-" + month.ToString();
             }
-            catch (Exception)
+
+            else if (day > 15)
             {
-                throw;   
-            }                         
+                response = month.ToString() + "-" + (month + 1).ToString();
+            }
+
+            else if (day <= 15)
+            {
+                response = (month - 1).ToString() + "-" + (month).ToString();
+            }
+
+            return response;
+        }
+
+        private string GetYear()
+        {
+            int day = DateTime.Now.Day;
+            int month = DateTime.Now.Month;
+            int year = DateTime.Now.Year;
+
+
+            if (day > 15 && month == 12)
+            {
+                year = year + 1;
+            }
+            return year.ToString();
         }
 
         private string ObtenerMesPrevio()

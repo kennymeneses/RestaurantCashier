@@ -23,7 +23,9 @@ namespace LogicaPlataforma
 
         public async Task<RespuestaFacturacionMesActual> ObtenerFacturacionMesActual()
         {
-            var sheetMesActual = _accesoArchivos.ObtenertHistorialdeLiquidacionActual();
+            //var sheetMesActual = _accesoArchivos.ObtenertHistorialdeLiquidacionActual();
+
+            var sheetMesActual = ObtenertHistorialdeLiquidacionActual();
             var response = new RespuestaFacturacionMesActual();
 
             if (sheetMesActual != null)
@@ -143,12 +145,8 @@ namespace LogicaPlataforma
         {
             var respuesta = new RespuestaOrdenCreada();
 
-            //var sheetMesActual = _accesoArchivos.ObtenerExcelParaRegistrar();
-
-            string year = DateTime.Now.Year.ToString();
-            string month = DateTime.Now.Month.ToString();
-            string nameFile = "LIQUIDACION" + ObtenerMesPrevio() + "-" + month + ".xlsx";
-            string path = Constantes.rutaLiquidaciones + year + "/" + nameFile;
+            string nameFile = "LIQUIDACION" + GetMonths() + ".xlsx";
+            string path = Constantes.rutaLiquidaciones + GetYear() + "/" + nameFile;
 
             //FileMode.Create, FileAccess.Write This combination doesnt support for write new data and remove all data
 
@@ -180,10 +178,7 @@ namespace LogicaPlataforma
                     }
                 }
                 else
-                {
-                    
-                    string _path = Constantes.rutaLiquidaciones+year+"/";
-
+                {                    
                     FileStream fs = new FileStream(path, FileMode.Create);
 
                     XSSFWorkbook workbook = new XSSFWorkbook();
@@ -192,9 +187,6 @@ namespace LogicaPlataforma
                     IRow rowIn = excelSheet.CreateRow(1);
                     InsertHeaders(headerRow);
                     InsertValuesInNewRow(order, rowIn, LastId);
-
-                    //ICell cellIn1 = rowIn.CreateCell(0);
-                    //cellIn1.SetCellValue(year);
 
                     workbook.Write(fs);
 
@@ -376,21 +368,72 @@ namespace LogicaPlataforma
             }            
         }
 
-        private string ObtenerMesPrevio()
+        public ISheet ObtenertHistorialdeLiquidacionActual()
         {
-            //validacion si hoy es mayor al dia 15
+            string nameFile = "LIQUIDACION" + GetMonths() + ".xlsx";
+            string path = Constantes.rutaLiquidaciones + GetYear() + "/" + nameFile;
 
-            int lastMonth = 12;
+            ISheet? worksheet = null;
+            try
+            {
+                if (System.IO.File.Exists(path))
+                {
+                    IWorkbook? workbook = null;  //IWorkbook determina si es xls o xlsx              
+
+                    using (FileStream FS = new FileStream(path, FileMode.Open, FileAccess.Read))
+                    {
+                        workbook = WorkbookFactory.Create(FS);          //Abre tanto XLS como XLSX
+                        worksheet = workbook.GetSheetAt(0);    //Obtener Hoja por indice                        
+                    }
+
+                    return worksheet;
+                }
+                return worksheet;
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
+        private string GetMonths()
+        {
+            int day = DateTime.Now.Day;
+            int december = 12;
             int month = DateTime.Now.Month;
 
-            if (month == 1)
+            string response = string.Empty;
+
+            if (month == 1 && day <= 15)
             {
-                return lastMonth.ToString();
+                response = december.ToString() + "-" + month.ToString();
             }
 
-            lastMonth = month - 1;
+            else if(day > 15)
+            {
+                response =  month.ToString() + "-"+ (month+1).ToString();
+            }
 
-            return lastMonth.ToString();
+            else if( day <= 15)
+            {
+                response =  (month-1).ToString() + "-"+ (month).ToString();
+            }
+
+            return response;
+        }
+
+        private string GetYear()
+        {
+            int day = DateTime.Now.Day;
+            int month = DateTime.Now.Month;
+            int year = DateTime.Now.Year;
+
+
+            if(day >=15 && month == 12)
+            {
+                year = year + 1;
+            }
+            return year.ToString();
         }
     }
 }
