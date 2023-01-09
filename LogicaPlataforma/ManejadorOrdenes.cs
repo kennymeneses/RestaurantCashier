@@ -9,11 +9,11 @@ namespace LogicaPlataforma
 {
     public class ManejadorOrdenes : IManejadorOrdenes
     {
-        AccesoArchivos _accesoArchivos;
+        IManejadorClientes _manejadorClientes;
 
-        public ManejadorOrdenes(AccesoArchivos accesoArchivos)
+        public ManejadorOrdenes(IManejadorClientes manejadorClientes)
         {
-            _accesoArchivos = accesoArchivos;
+            _manejadorClientes = manejadorClientes;
         }
 
         public Task ObtenerMesesFacturados()
@@ -45,6 +45,7 @@ namespace LogicaPlataforma
 
                 response.StatusResponse = Constantes.StatusOk;
                 response.DescriptionResponse = Constantes.SucesfullResponseDescription;
+                response.LastNroTicket = listOrders.LastNroTicket;
                 response.Total = sheetMesActual.LastRowNum;
                 response.Data = listOrders.data;
 
@@ -61,6 +62,7 @@ namespace LogicaPlataforma
             }
         }
 
+        //!!!importante de implmentar por mes cambiando solo el path
         public Task<List<Orden>> ObtenerOrdenesPorMes()
         {
             throw new NotImplementedException();
@@ -80,7 +82,7 @@ namespace LogicaPlataforma
 
             try
             {
-                for (int i = 1; i < rowCount; i++)
+                for (int i = 1; i <= rowCount; i++)
                 {
                     var orden = new Orden();
                     IRow row = sheet.GetRow(i);
@@ -95,6 +97,10 @@ namespace LogicaPlataforma
 
                     orders.Add(orden);
                 }
+
+                IRow lastRow = sheet.GetRow(rowCount);
+
+                response.LastNroTicket = lastRow.Cells[3].StringCellValue.Trim();
                 response.responseDescription = Constantes.StatusOk;
                 response.data = orders;
 
@@ -148,6 +154,8 @@ namespace LogicaPlataforma
             string nameFile = "LIQUIDACION" + GetMonths() + ".xlsx";
             string path = Constantes.rutaLiquidaciones + GetYear() + "/" + nameFile;
 
+            string pathClients = Constantes.rutaClientes;
+
             //FileMode.Create, FileAccess.Write This combination doesnt support for write new data and remove all data
 
             double LastId = 0;
@@ -172,10 +180,37 @@ namespace LogicaPlataforma
 
                         file.Close();
 
+                        //add nro Ticket
+                        respuesta.LastNroTicket = order.NroTicket;
                         respuesta.Id = LastId + 1;
                         respuesta.ResponseStatus = Constantes.StatusOk;
                         respuesta.ResponseDescription = Constantes.OrderRegisteredSuccessfully;
                     }
+
+                    //if(!await ClientFromOrderExists(order))
+                    //{
+
+                    //    //esta fallando la insercion
+                    //    using (var _fs = new FileStream(pathClients, FileMode.Open, FileAccess.ReadWrite))
+                    //    {
+                    //        XSSFWorkbook workbook = new XSSFWorkbook(_fs);
+                    //        ISheet excelSheet = workbook.GetSheet("Hoja1");
+                    //        int numRecords = excelSheet.LastRowNum;
+
+                    //        IRow row = excelSheet.GetRow(numRecords);
+                    //        LastId = row.Cells[0].NumericCellValue;
+
+                    //        IRow rowIn = excelSheet.CreateRow(numRecords + 1);
+                    //        InsertNewClient(order, rowIn, LastId);
+
+                    //        var file = new FileStream(path, FileMode.Create);
+                    //        workbook.Write(file);
+
+                    //        _fs.Close();
+
+                    //        respuesta.ResponseDescription = Constantes.OrderAndClientRegisteredSuccessfully;
+                    //    }
+                    //}                    
                 }
                 else
                 {                    
@@ -192,6 +227,7 @@ namespace LogicaPlataforma
 
                     fs.Close();
 
+                    respuesta.LastNroTicket = order.NroTicket;
                     respuesta.Id = LastId + 1;
                     respuesta.ResponseStatus = Constantes.StatusOk;
                     respuesta.ResponseDescription = Constantes.OrderRegisteredWithNewFile;
@@ -207,6 +243,30 @@ namespace LogicaPlataforma
 
                 return respuesta;
             }
+        }
+
+        private void InsertNewClient(OrderInput order, IRow rowIn, double LastId)
+        {
+            ICell cellIn1 = rowIn.CreateCell(0);
+            cellIn1.SetCellValue(LastId);
+
+            ICell cellIn2 = rowIn.CreateCell(1);
+            cellIn2.SetCellValue(order.DNI);
+
+            ICell cellIn3 = rowIn.CreateCell(2);
+            cellIn3.SetCellValue(order.Nombres);
+
+            ICell cellIn4 = rowIn.CreateCell(3);
+            cellIn4.SetCellValue(order.Planilla);
+
+            ICell cellIn5 = rowIn.CreateCell(4);
+            cellIn5.SetCellValue(order.Area);
+
+            ICell cellIn6 = rowIn.CreateCell(5);
+            cellIn6.SetCellValue(order.Cargo);
+
+            ICell cellIn7 = rowIn.CreateCell(6);
+            cellIn7.SetCellValue(0);
         }
 
         private void InsertValuesInNewRow(OrderInput order, IRow rowIn, double LastId)
@@ -351,6 +411,7 @@ namespace LogicaPlataforma
 
                     fs.Close();
 
+                    //respuesta.LastNroTicket = 
                     respuesta.ResponseDescription = Constantes.OrderRegisteredSuccessfully;
                     respuesta.ResponseStatus = Constantes.StatusOk;
                     respuesta.Id = 1;
@@ -434,6 +495,16 @@ namespace LogicaPlataforma
                 year = year + 1;
             }
             return year.ToString();
+        }
+
+        private async Task<bool> ClientFromOrderExists(OrderInput order)
+        {
+            var respuestaClientes = await _manejadorClientes.ObtenerClientes();
+            var listaClientes = respuestaClientes.data;
+
+            bool existeCliente = listaClientes.Exists(x => x.Dni == order.DNI);
+
+            return existeCliente;
         }
     }
 }

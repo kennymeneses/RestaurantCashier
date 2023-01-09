@@ -1,4 +1,6 @@
-﻿using LogicaPlataforma;
+﻿using DataAccess.Respuestas;
+using DataAccess.Solicitudes;
+using LogicaPlataforma;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Restaurante_Ronald.Controllers
@@ -23,14 +25,55 @@ namespace Restaurante_Ronald.Controllers
         {
             try
             {
-                var respuestaFacturacion = await _manejadorClientes.ObtenerClientes();
+                var clientes = await _manejadorClientes.ObtenerClientes();
 
-                return Ok(respuestaFacturacion);
+                return Ok(clientes);
             }
             catch (Exception ex)
             {
                 throw;
             }
         }
+
+        [Route("GetHistoricalClient")]
+        [HttpGet]
+        public async Task<IActionResult> GetHistoricalClient(string dni)
+        {
+            try
+            {
+                var clientes = await _manejadorClientes.ObtenerClientes();
+
+                return Ok(clientes);
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
+        //crear controller para crear cliente 
+
+        [Route("CreateClient")]
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] ClienteInput newClient)
+        {
+            var responseClienteCreated = new RespuestaClienteCreado();
+            
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest();
+                }
+                responseClienteCreated = await _manejadorClientes.CrearCliente(newClient);
+
+                return StatusCode(201, responseClienteCreated);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(501, responseClienteCreated);
+            }
+        }
+
     }
 }

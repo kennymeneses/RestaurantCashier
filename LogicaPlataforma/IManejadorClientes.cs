@@ -8,5 +8,7 @@ namespace LogicaPlataforma
         Task<RespuestaListaClientes> ObtenerClientes();
         Task<RespuestaClienteEspecifico> ObtenerCliente(string dni);
         Task<RespuestaClienteCreado> CrearCliente(ClienteInput input);
+
+        Task MigrateOrdersInfoToClientsFile();
     }
 }

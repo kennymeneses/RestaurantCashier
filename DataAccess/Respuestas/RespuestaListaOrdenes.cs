@@ -7,6 +7,7 @@ namespace DataAccess.Respuestas
         public List<Orden>? data { get; set; }
 
         public string responseDescription { get; set; }
+        public string LastNroTicket { get; set; }
 
         public RespuestaListaOrdenes()
         {
