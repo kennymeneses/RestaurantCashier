@@ -47,11 +47,6 @@ namespace LogicaPlataforma
             return respuesta;
         }
 
-        public Task<RespuestaClienteEspecifico> ObtenerCliente(string dni)
-        {
-            throw new NotImplementedException();
-        }
-
         public async Task<RespuestaListaClientes> ObtenerClientes()
         {
             var response = new RespuestaListaClientes();

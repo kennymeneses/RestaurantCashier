@@ -19,5 +19,6 @@
         public string? Planilla { get; set; }
         public string? Area { get; set; }
         public string? Cargo { get; set; }
+        public int Eliminado { get; set; }
     }
 }

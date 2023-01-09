@@ -13,5 +13,6 @@ namespace LogicaPlataforma
         Task<RespuestaOrdenCreada> RegistrarNuevaOrden(OrderInput order);
 
         Task<RespuestaOrdenCreada> CreateNewExcelAndWrite();
+        Task<RespuestaHistoricoActualCliente> ObtenerHistoricoClienteMesActual(string dni);
     }
 }

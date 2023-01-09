@@ -35,24 +35,6 @@ namespace Restaurante_Ronald.Controllers
             }
         }
 
-        [Route("GetHistoricalClient")]
-        [HttpGet]
-        public async Task<IActionResult> GetHistoricalClient(string dni)
-        {
-            try
-            {
-                var clientes = await _manejadorClientes.ObtenerClientes();
-
-                return Ok(clientes);
-            }
-            catch (Exception ex)
-            {
-                throw;
-            }
-        }
-
-        //crear controller para crear cliente 
-
         [Route("CreateClient")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] ClienteInput newClient)

@@ -32,7 +32,22 @@ namespace Restaurante_Ronald.Controllers
             {
                 throw;
             }
+        }
 
+        [Route("GetHistoricalClient")]
+        [HttpGet]
+        public async Task<IActionResult> GetHistoricalClient(string dni)
+        {
+            try
+            {
+                var clientes = await _manejadorOrdenes.ObtenerHistoricoClienteMesActual(dni);
+
+                return Ok(clientes);
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
         }
 
         [Route("CreateOrder")]

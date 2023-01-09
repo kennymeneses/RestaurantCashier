@@ -46,7 +46,7 @@ namespace LogicaPlataforma
                 response.StatusResponse = Constantes.StatusOk;
                 response.DescriptionResponse = Constantes.SucesfullResponseDescription;
                 response.LastNroTicket = listOrders.LastNroTicket;
-                response.Total = sheetMesActual.LastRowNum;
+                response.Total = listOrders.data.Count;
                 response.Data = listOrders.data;
 
                 return response;
@@ -95,8 +95,16 @@ namespace LogicaPlataforma
 
                     orden = GetOrderFromRow(row);
 
-                    orders.Add(orden);
+                    if(orden.Eliminado == 0)
+                    {
+                        orders.Add(orden);
+                    }                    
                 }
+
+                var ordenesActivas = new List<Orden>();
+
+
+                //45127726
 
                 IRow lastRow = sheet.GetRow(rowCount);
 
@@ -137,6 +145,7 @@ namespace LogicaPlataforma
                 orden.Planilla = row.Cells[14].StringCellValue.Trim();
                 orden.Area = row.Cells[15].StringCellValue.Trim();
                 orden.Cargo = row.Cells[16].StringCellValue.Trim();
+                orden.Eliminado = (int)row.Cells[17].NumericCellValue;
 
                 return orden;
             }
@@ -185,32 +194,7 @@ namespace LogicaPlataforma
                         respuesta.Id = LastId + 1;
                         respuesta.ResponseStatus = Constantes.StatusOk;
                         respuesta.ResponseDescription = Constantes.OrderRegisteredSuccessfully;
-                    }
-
-                    //if(!await ClientFromOrderExists(order))
-                    //{
-
-                    //    //esta fallando la insercion
-                    //    using (var _fs = new FileStream(pathClients, FileMode.Open, FileAccess.ReadWrite))
-                    //    {
-                    //        XSSFWorkbook workbook = new XSSFWorkbook(_fs);
-                    //        ISheet excelSheet = workbook.GetSheet("Hoja1");
-                    //        int numRecords = excelSheet.LastRowNum;
-
-                    //        IRow row = excelSheet.GetRow(numRecords);
-                    //        LastId = row.Cells[0].NumericCellValue;
-
-                    //        IRow rowIn = excelSheet.CreateRow(numRecords + 1);
-                    //        InsertNewClient(order, rowIn, LastId);
-
-                    //        var file = new FileStream(path, FileMode.Create);
-                    //        workbook.Write(file);
-
-                    //        _fs.Close();
-
-                    //        respuesta.ResponseDescription = Constantes.OrderAndClientRegisteredSuccessfully;
-                    //    }
-                    //}                    
+                    }              
                 }
                 else
                 {                    
@@ -243,6 +227,61 @@ namespace LogicaPlataforma
 
                 return respuesta;
             }
+        }
+
+        public async Task<RespuestaHistoricoActualCliente> ObtenerHistoricoClienteMesActual(string dni)
+        {
+            var response = new RespuestaHistoricoActualCliente();
+
+            try
+            {
+                var sheetMesActual = ObtenertHistorialdeLiquidacionActual();
+
+
+                if (sheetMesActual != null)
+                {
+
+                    var listOrders = await GetListOrders(sheetMesActual);
+
+                    if (listOrders.data == null)
+                    {
+                        response.ResponseStatus = Constantes.StatusError;
+                        response.ResponseDescription = listOrders.responseDescription;
+                        response.Total = 0;
+                        response.data = listOrders.data;
+
+                        return response;
+                    }
+
+                    response.ResponseStatus = Constantes.StatusOk;
+                    response.ResponseDescription = Constantes.SucesfullResponseDescription;
+
+                    var ListordersByDni = listOrders.data.Where(x => x.DNI == dni).ToList();      
+
+                    response.Total = ListordersByDni.Count;
+                    response.data = ListordersByDni;
+
+                    return response;
+                }
+                else
+                {
+                    response.ResponseStatus = Constantes.StatusError;
+                    response.ResponseDescription = Constantes.FileDoesntExists;
+                    response.Total = 0;
+                    response.data = null;
+
+                    return response;
+                }
+
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+            
         }
 
         private void InsertNewClient(OrderInput order, IRow rowIn, double LastId)
