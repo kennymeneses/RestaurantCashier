@@ -16,6 +16,7 @@ namespace Restaurante_Ronald
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSingleton<AccesoArchivos>();
             builder.Services.AddScoped<IManejadorOrdenes, ManejadorOrdenes>();
+            builder.Services.AddScoped<IManejadorClientes, ManejadorClientes>();
             builder.Services.AddSwaggerGen();
 
             var app = builder.Build();

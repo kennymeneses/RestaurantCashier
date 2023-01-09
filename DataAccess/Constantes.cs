@@ -4,6 +4,10 @@
     {
         public const string rutaLiquidaciones = "./../../excels/Liquidaciones/";
         public const string rutaPruebas = "./../../excels/Pruebas/";
+        public const string rutaClientes = "./../../excels/Clientes/HistorialClientes.xlsx";
+
+        public const string GetListClientSuccessfully = "Se obtuvo la lista de clientes satisfactoriamente";
+        public const string ListClientEmpty = "No hay clientes registrados";
 
         public const string OrderRegisteredWithNewFile = "Se creo el excel mensual y la orden fue registrada satisfactoriamente";
         public const string OrderRegisteredSuccessfully = "La orden fue registrada satisfactoriamente";

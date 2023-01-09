@@ -22,9 +22,17 @@ namespace Restaurante_Ronald.Controllers
         [HttpGet]
         public async Task<IActionResult> GetClients()
         {
-            var respuestaFacturacion =  await _manejadorOrdenes.ObtenerFacturacionMesActual();
+            try
+            {
+                var respuestaFacturacion = await _manejadorOrdenes.ObtenerFacturacionMesActual();
 
-            return Ok(respuestaFacturacion);
+                return Ok(respuestaFacturacion);
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+
         }
 
         [Route("CreateOrder")]
