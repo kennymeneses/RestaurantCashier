@@ -34,8 +34,8 @@ namespace Restaurante_Ronald.Controllers
             }
         }
 
-        [Route("GetHistoricalClient")]
-        [HttpGet]
+        //[Route("GetHistoricalClient")]
+        [HttpGet("GetHistoricalClient/{dni}")]
         public async Task<IActionResult> GetHistoricalClient(string dni)
         {
             try
@@ -92,6 +92,21 @@ namespace Restaurante_Ronald.Controllers
                 responseOrder.ResponseDescription = ex.Message;
 
                 return StatusCode(501, responseOrder);
+            }
+        }
+
+        [HttpGet("Getmenus")]
+        public async Task<IActionResult> GetMenus()
+        {
+            var response = new RespuestaListaMenus();
+            try
+            {
+                response = await _manejadorOrdenes.ObtenerMenusList();
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(400, response);
             }
         }
     }

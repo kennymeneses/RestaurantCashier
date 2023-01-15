@@ -32,6 +32,10 @@ namespace Restaurante_Ronald
 
             app.UseAuthorization();
 
+            app.UseCors(policy => policy.AllowAnyHeader()
+                            .AllowAnyMethod()
+                            .SetIsOriginAllowed(origin => true)
+                            .AllowCredentials());
 
             app.MapControllers();
 

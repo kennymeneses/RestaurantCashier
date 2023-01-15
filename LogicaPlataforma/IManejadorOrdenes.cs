@@ -14,5 +14,7 @@ namespace LogicaPlataforma
 
         Task<RespuestaOrdenCreada> CreateNewExcelAndWrite();
         Task<RespuestaHistoricoActualCliente> ObtenerHistoricoClienteMesActual(string dni);
+
+        Task<RespuestaListaMenus> ObtenerMenusList();
     }
 }

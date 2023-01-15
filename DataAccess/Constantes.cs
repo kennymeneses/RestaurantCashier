@@ -4,7 +4,8 @@
     {
         public const string rutaLiquidaciones = "./../../excels/Liquidaciones/";
         public const string rutaPruebas = "./../../excels/Pruebas/";
-        public const string rutaClientes = "./../../excels/Clientes/Clientes.xlsx";
+        public const string rutaClientes = "./../../excels/Clientes/NUEVOSCLIENTES.xlsx";
+        public const string rutaMenus = "./../../excels/menus.xlsx";
 
         public const string GetListClientSuccessfully = "Se obtuvo la lista de clientes satisfactoriamente";
         public const string ListClientEmpty = "No hay clientes registrados";

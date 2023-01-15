@@ -2,7 +2,7 @@
 {
     public class Cliente
     {
-        public double IdEmpleado { get; set; }
+        public string IdEmpleado { get; set; }
         public string Dni { get; set; }
         public string Nombres { get; set; }
         public string Planilla { get; set; }

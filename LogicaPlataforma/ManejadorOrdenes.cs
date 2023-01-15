@@ -129,8 +129,8 @@ namespace LogicaPlataforma
             try
             {
                 orden.OrdenId = row.Cells[0].NumericCellValue;
-                orden.Fecha = row.Cells[1].DateCellValue.ToString();
-                orden.Hora = row.Cells[2].NumericCellValue;
+                orden.Fecha = row.Cells[1].StringCellValue.Trim();
+                orden.Hora = row.Cells[2].StringCellValue.Trim();
                 orden.NroTicket = row.Cells[3].StringCellValue.Trim();
                 orden.IdEmpleado = row.Cells[4].StringCellValue.Trim();
                 orden.DNI = row.Cells[5].StringCellValue.Trim();
@@ -361,8 +361,8 @@ namespace LogicaPlataforma
             ICell cellIn17 = rowIn.CreateCell(16);
             cellIn17.SetCellValue(order.Cargo);
 
-            ICell cellIn18 = rowIn.CreateCell(16);
-            cellIn18.SetCellValue("No");
+            ICell cellIn18 = rowIn.CreateCell(17);
+            cellIn18.SetCellValue(0);
         }
 
         private void InsertHeaders(IRow rowIn)
@@ -544,6 +544,128 @@ namespace LogicaPlataforma
             bool existeCliente = listaClientes.Exists(x => x.Dni == order.DNI);
 
             return existeCliente;
+        }
+
+        public async Task<RespuestaListaMenus> ObtenerMenusList()
+        {
+            var response = new RespuestaListaMenus();
+            
+            try
+            {
+                var hojamenus = ObtenertHojaMenus();
+                if (hojamenus == null)
+                {
+                    response.menus = null;
+                    response.Total = 0;
+                    response.ResponseStatus = Constantes.StatusError;
+
+
+                    return response;
+                }
+
+                var listaMenus = await GetListMenus(hojamenus);
+
+                response.menus = listaMenus;
+                response.Total = listaMenus.Count;
+                response.ResponseStatus = Constantes.StatusOk;
+
+                return response;
+
+            }
+            catch (Exception ex)
+            {
+                response.menus = null;
+                response.Total = 0;
+                response.ResponseStatus = ex.Message;
+
+                return response;
+            }
+            
+        }
+
+        public ISheet ObtenertHojaMenus()
+        {
+            string nameFile = "LIQUIDACION" + GetMonths() + ".xlsx";
+            string path = Constantes.rutaMenus;
+
+            ISheet? worksheet = null;
+            try
+            {
+                if (System.IO.File.Exists(path))
+                {
+                    IWorkbook? workbook = null;  //IWorkbook determina si es xls o xlsx              
+
+                    using (FileStream FS = new FileStream(path, FileMode.Open, FileAccess.Read))
+                    {
+                        workbook = WorkbookFactory.Create(FS);          //Abre tanto XLS como XLSX
+                        worksheet = workbook.GetSheetAt(0);    //Obtener Hoja por indice                        
+                    }
+
+                    return worksheet;
+                }
+                return worksheet;
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
+        private async Task<List<Menu>> GetListMenus(ISheet sheet)
+        {
+            var response = new RespuestaListaOrdenes();
+            List<Menu>? menus = new List<Menu>();
+            int rowCount = sheet.LastRowNum;
+            int columsCount = sheet.DefaultColumnWidth;
+
+            try
+            {
+                for (int i = 0; i <= rowCount; i++)
+                {
+                    var menu = new Menu();
+                    IRow row = sheet.GetRow(i);
+
+                    if (row == null)
+                    {
+                        rowCount = i - 1;
+                        break;
+                    }
+
+                    menu = await GetMenuFromRow(row);
+
+                    menus.Add(menu);
+                }
+
+                return menus;
+            }
+            catch (Exception ex)
+            {
+                return menus;
+            }
+        }
+
+        private async Task<Menu> GetMenuFromRow(IRow row)
+        {
+            var menu = new Menu();
+            try
+            {
+                menu.IdMenu = (int)row.Cells[0].NumericCellValue;
+                menu.NombreMenu = row.Cells[1].StringCellValue;
+                menu.precio = row.Cells[2].NumericCellValue;
+
+                return menu;
+
+            }
+            catch (Exception ex)
+            {
+                menu = null;
+                return menu;
+            }
+        }
+
+        public async Task PrintReceipt()
+        {
+
         }
     }
 }

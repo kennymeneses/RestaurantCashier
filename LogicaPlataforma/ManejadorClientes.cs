@@ -20,31 +20,42 @@ namespace LogicaPlataforma
             var respuesta = new RespuestaClienteCreado();
             int LastId = 0;
 
-            if (System.IO.File.Exists(path))
+            try
             {
-                using (var fs = new FileStream(path, FileMode.Open, FileAccess.ReadWrite))
+                if (System.IO.File.Exists(path))
                 {
-                    XSSFWorkbook workbook = new XSSFWorkbook(fs);
-                    ISheet excelSheet = workbook.GetSheet("Hoja1");
-                    int numRecords = excelSheet.LastRowNum;
+                    using (var fs = new FileStream(path, FileMode.Open, FileAccess.ReadWrite))
+                    {
+                        XSSFWorkbook workbook = new XSSFWorkbook(fs);
+                        ISheet excelSheet = workbook.GetSheet("Hoja1");
+                        int numRecords = excelSheet.LastRowNum;
 
-                    IRow row = excelSheet.GetRow(numRecords);
-                    LastId = (int)row.Cells[0].NumericCellValue;
+                        IRow row = excelSheet.GetRow(numRecords);
+                        LastId = Int32.Parse(row.Cells[0].StringCellValue.Trim());
 
-                    IRow rowIn = excelSheet.CreateRow(numRecords + 1);
-                    InsertCient(input, rowIn, LastId);
+                        IRow rowIn = excelSheet.CreateRow(numRecords + 1);
+                        InsertCient(input, rowIn, LastId);
 
-                    var file = new FileStream(path, FileMode.Create);
-                    workbook.Write(file);
+                        var file = new FileStream(path, FileMode.Create);
+                        workbook.Write(file);
 
-                    file.Close();
+                        file.Close();
 
-                    respuesta.Id = LastId + 1;
-                    respuesta.ResponseStatus = Constantes.StatusOk;
-                    respuesta.ResponseDescription = Constantes.ClienteCreatedSuccessfully;
-                }                 
+                        respuesta.Id = LastId + 1;
+                        respuesta.ResponseStatus = Constantes.StatusOk;
+                        respuesta.ResponseDescription = Constantes.ClienteCreatedSuccessfully;
+                    }
+                }
+                return respuesta;
             }
-            return respuesta;
+            catch (Exception ex)
+            {
+                respuesta.Id = 0;
+                respuesta.ResponseStatus = Constantes.StatusError;
+                respuesta.ResponseDescription = ex.Message;
+
+                return respuesta;
+            }            
         }
 
         public async Task<RespuestaListaClientes> ObtenerClientes()
@@ -156,13 +167,14 @@ namespace LogicaPlataforma
             var cliente = new Cliente();
             try
             {
-                cliente.IdEmpleado = row.Cells[0].NumericCellValue;
-                cliente.Dni = row.Cells[1].StringCellValue.Trim();
+                cliente.IdEmpleado = row.Cells[0].StringCellValue.Trim();
+                cliente.Dni = row.Cells[1].StringCellValue.Trim(); //valir si es cel type o puede ser 
                 cliente.Nombres = row.Cells[2].StringCellValue.Trim();
                 cliente.Planilla = row.Cells[3].StringCellValue.Trim();
                 cliente.Area = row.Cells[4].StringCellValue.Trim();
                 cliente.Cargo = row.Cells[5].StringCellValue.Trim();
                 cliente.Eliminado = row.Cells[6].NumericCellValue;
+
                 return cliente;
             }
             catch (Exception ex)
@@ -225,7 +237,7 @@ namespace LogicaPlataforma
             {
                 orden.OrdenId = row.Cells[0].NumericCellValue;
                 orden.Fecha = row.Cells[1].DateCellValue.ToString();
-                orden.Hora = row.Cells[2].NumericCellValue;
+                orden.Hora = row.Cells[2].StringCellValue.Trim();
                 orden.NroTicket = row.Cells[3].StringCellValue.Trim();
                 orden.IdEmpleado = row.Cells[4].NumericCellValue.ToString();
                 orden.DNI = row.Cells[5].StringCellValue.Trim();
@@ -316,7 +328,7 @@ namespace LogicaPlataforma
                     foreach (var orden in listaOrdenes.data)
                     {
                         var client = new Cliente();
-                        client.IdEmpleado = Int32.Parse(orden.IdEmpleado);
+                        client.IdEmpleado = orden.IdEmpleado;
                         client.Dni = orden.DNI;
                         client.Nombres = orden.Nombres;
                         client.Planilla = orden.Planilla;
@@ -364,34 +376,42 @@ namespace LogicaPlataforma
 
                 throw;
             }
-            
-
-
         }
 
         public void InsertCient(ClienteInput input,IRow rowIn, int id)
         {
-            ICell cellIn1 = rowIn.CreateCell(0);
-            cellIn1.SetCellValue(id+1);
+            try
+            {
+                ICell cellIn1 = rowIn.CreateCell(0);
+                cellIn1.SetCellValue(input.IdCliente);
 
-            ICell cellIn2 = rowIn.CreateCell(1);
-            cellIn2.SetCellValue(input.Dni);
+                ICell cellIn2 = rowIn.CreateCell(1);
+                cellIn2.SetCellValue(input.Dni);
 
-            ICell cellIn3 = rowIn.CreateCell(2);
-            cellIn3.SetCellValue(input.Nombres);
+                ICell cellIn3 = rowIn.CreateCell(2);
+                cellIn3.SetCellValue(input.Nombres);
 
-            ICell cellIn4 = rowIn.CreateCell(3);
-            cellIn4.SetCellValue(input.Planilla);
+                ICell cellIn4 = rowIn.CreateCell(3);
+                cellIn4.SetCellValue(input.Planilla);
 
-            ICell cellIn5 = rowIn.CreateCell(4);
-            cellIn5.SetCellValue(input.Area);
+                ICell cellIn5 = rowIn.CreateCell(4);
+                cellIn5.SetCellValue(input.Area);
 
-            ICell cellIn6 = rowIn.CreateCell(5);
-            cellIn6.SetCellValue(input.Cargo);
+                ICell cellIn6 = rowIn.CreateCell(5);
+                cellIn6.SetCellValue(input.Cargo);
 
-            ICell cellIn7 = rowIn.CreateCell(6);
-            cellIn7.SetCellValue(0);
+                ICell cellIn7 = rowIn.CreateCell(6);
+                cellIn7.SetCellValue(0);
 
+                ICell cellIn8 = rowIn.CreateCell(7);
+                cellIn8.SetCellValue(input.Fecha);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+            
         }
     }
 }

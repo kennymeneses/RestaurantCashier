@@ -4,7 +4,7 @@
     {
         public double OrdenId { get; set; }
         public string Fecha { get; set; }
-        public double Hora { get; set; }
+        public string Hora { get; set; }
         public string NroTicket { get; set; }
         public string IdEmpleado { get; set; }
         public string DNI { get; set; }
