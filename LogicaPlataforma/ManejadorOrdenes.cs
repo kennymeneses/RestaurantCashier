@@ -2,8 +2,16 @@
 using DataAccess.Modelo;
 using DataAccess.Respuestas;
 using DataAccess.Solicitudes;
+using ESCPOS_NET;
+using ESCPOS_NET.Emitters;
+using ESCPOS_NET.Utilities;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
+using System.Drawing;
+using System.Drawing.Printing;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Text;
 
 namespace LogicaPlataforma
 {
@@ -95,10 +103,10 @@ namespace LogicaPlataforma
 
                     orden = GetOrderFromRow(row);
 
-                    if(orden.Eliminado == 0)
+                    if (orden.Eliminado == 0)
                     {
                         orders.Add(orden);
-                    }                    
+                    }
                 }
 
                 var ordenesActivas = new List<Orden>();
@@ -120,7 +128,7 @@ namespace LogicaPlataforma
                 response.data = null;
 
                 return response;
-            }            
+            }
         }
 
         private Orden GetOrderFromRow(IRow row)
@@ -153,7 +161,7 @@ namespace LogicaPlataforma
             {
                 orden = null;
                 return orden;
-            }            
+            }
         }
 
         public async Task<RespuestaOrdenCreada> RegistrarNuevaOrden(OrderInput order)
@@ -180,10 +188,10 @@ namespace LogicaPlataforma
 
                         IRow row = excelSheet.GetRow(numRecords);
                         LastId = row.Cells[0].NumericCellValue;
-                    
-                        IRow rowIn = excelSheet.CreateRow(numRecords+1);
+
+                        IRow rowIn = excelSheet.CreateRow(numRecords + 1);
                         InsertValuesInNewRow(order, rowIn, LastId);
-                    
+
                         var file = new FileStream(path, FileMode.Create);
                         workbook.Write(file);
 
@@ -194,10 +202,10 @@ namespace LogicaPlataforma
                         respuesta.Id = LastId + 1;
                         respuesta.ResponseStatus = Constantes.StatusOk;
                         respuesta.ResponseDescription = Constantes.OrderRegisteredSuccessfully;
-                    }              
+                    }
                 }
                 else
-                {                    
+                {
                     FileStream fs = new FileStream(path, FileMode.Create);
 
                     XSSFWorkbook workbook = new XSSFWorkbook();
@@ -256,7 +264,7 @@ namespace LogicaPlataforma
                     response.ResponseStatus = Constantes.StatusOk;
                     response.ResponseDescription = Constantes.SucesfullResponseDescription;
 
-                    var ListordersByDni = listOrders.data.Where(x => x.DNI == dni).ToList();      
+                    var ListordersByDni = listOrders.data.Where(x => x.DNI == dni).ToList();
 
                     response.Total = ListordersByDni.Count;
                     response.data = ListordersByDni;
@@ -281,7 +289,7 @@ namespace LogicaPlataforma
 
                 throw;
             }
-            
+
         }
 
         private void InsertNewClient(OrderInput order, IRow rowIn, double LastId)
@@ -434,7 +442,7 @@ namespace LogicaPlataforma
 
             try
             {
-                if(!Directory.Exists(path+"nuevacarpeta"))
+                if (!Directory.Exists(path + "nuevacarpeta"))
                 {
                     Directory.CreateDirectory(path + "nuevacarpeta");
 
@@ -462,10 +470,10 @@ namespace LogicaPlataforma
             }
             catch (Exception ex)
             {
-                respuesta.ResponseStatus= Constantes.StatusError;
+                respuesta.ResponseStatus = Constantes.StatusError;
                 respuesta.ResponseDescription = ex.Message;
                 return respuesta;
-            }            
+            }
         }
 
         public ISheet ObtenertHistorialdeLiquidacionActual()
@@ -504,19 +512,19 @@ namespace LogicaPlataforma
 
             string response = string.Empty;
 
-            if (month == 1 && day <= 15)
+            if (month == 1 && day <= 14)
             {
                 response = december.ToString() + "-" + month.ToString();
             }
 
-            else if(day > 15)
+            else if (day > 14)
             {
-                response =  month.ToString() + "-"+ (month+1).ToString();
+                response = month.ToString() + "-" + (month + 1).ToString();
             }
 
-            else if( day <= 15)
+            else if (day <= 14)
             {
-                response =  (month-1).ToString() + "-"+ (month).ToString();
+                response = (month - 1).ToString() + "-" + (month).ToString();
             }
 
             return response;
@@ -529,7 +537,7 @@ namespace LogicaPlataforma
             int year = DateTime.Now.Year;
 
 
-            if(day >=15 && month == 12)
+            if (day >= 15 && month == 12)
             {
                 year = year + 1;
             }
@@ -549,7 +557,7 @@ namespace LogicaPlataforma
         public async Task<RespuestaListaMenus> ObtenerMenusList()
         {
             var response = new RespuestaListaMenus();
-            
+
             try
             {
                 var hojamenus = ObtenertHojaMenus();
@@ -580,7 +588,7 @@ namespace LogicaPlataforma
 
                 return response;
             }
-            
+
         }
 
         public ISheet ObtenertHojaMenus()
@@ -663,9 +671,143 @@ namespace LogicaPlataforma
             }
         }
 
-        public async Task PrintReceipt()
+        private void pd_PrintPage(object sender, PrintPageEventArgs ev)
         {
+            var printFont = new Font("Arial", 8);
+            float linesPerPage = 0;
+            int count = 0;
+            float yPos = 0;
+            //float leftMargin = ev.MarginBounds.Left;
+            float leftMargin = 0;
+            //float topMargin = ev.MarginBounds.Top;
+            float topMargin = 0;
+            string line = null;
 
+
+            var orderInformation = new OrderInformation();
+            var stream = GenerateStreamFromObject(orderInformation);
+
+            StreamReader streamToPrint = new StreamReader(stream);
+
+            linesPerPage = ev.MarginBounds.Height / printFont.GetHeight(ev.Graphics);
+
+            while (count < linesPerPage && ((line = streamToPrint.ReadLine()) != null))
+            {
+                yPos = topMargin + (count *
+                   printFont.GetHeight(ev.Graphics));
+                ev.Graphics.DrawString(line, printFont, Brushes.Black,
+                   leftMargin, yPos, new StringFormat());
+                count++;
+            }
+        }
+
+
+        public Stream GenerateStreamFromObject(OrderInformation information)
+        {
+            StringBuilder stringBuilder = new StringBuilder("           FUEGO, SAZON Y SABOR\n");
+            stringBuilder.Append("          RUC: 10329022395 \n");
+            stringBuilder.Append("--------------------------------------- \n");
+            stringBuilder.Append("Ticket Nro. CJ01-0099436 \n");
+            stringBuilder.AppendFormat("Fecha: {0}          Hora: {1} \n", DateTime.Now.ToShortDateString(), DateTime.Now.ToShortTimeString());
+            stringBuilder.Append("----------------------------------------------- \n");
+            stringBuilder.Append("Item              Cant    Precio      Total \n");
+            foreach (var order in information.ordersList)
+            {
+                double totalProduct = order.PriceProduct * order.CountProduct;
+
+                stringBuilder.AppendFormat("{0}     {1}     {2}     {3} \n", order.NameProduct.ToString(),
+                                                            order.CountProduct.ToString(), order.PriceProduct.ToString(), totalProduct.ToString());
+            }
+            //stringBuilder.Append("MENU PARA LLEVAR   1      S/. 8,00    S/. 8,00 \n");
+            stringBuilder.Append("----------------------------------------------- \n");
+            stringBuilder.AppendFormat("Total Venta                           S/. {0}0 \n", information.total.ToString());
+            stringBuilder.Append(" \n");
+            stringBuilder.Append("Condicion de pago: CREDITO \n");
+            stringBuilder.AppendFormat("DNI              : {0} \n", information.ClientDni.ToString());
+            stringBuilder.AppendFormat("Nombres          : {0} \n", information.ClientName.ToString()); 
+
+            MemoryStream stream = new MemoryStream();
+            StreamWriter writer = new StreamWriter(stream);
+            writer.Write(stringBuilder);
+            writer.Flush();
+            stream.Position = 0;
+            return stream;
+        }
+
+        public async Task<ResponsePrinter> PrintOrder(OrderInformation information)
+        {
+            var response = new ResponsePrinter();
+
+            try
+            {
+                var fileToPrinter = new PrintDocument();
+                fileToPrinter.DocumentName = "documento";
+                //fileToPrinter.PrintPage += new PrintPageEventHandler(this.pd_PrintPage);
+                fileToPrinter.PrintPage += (sender, e) => {
+
+                    StringBuilder stringBuilder = new StringBuilder("           FUEGO, SAZON Y SABOR\n");
+                    stringBuilder.Append("          RUC: 10729022395 \n");
+                    stringBuilder.Append("--------------------------------------- \n");
+                    stringBuilder.AppendFormat("Ticket Nro. {0} \n", information.NroTicket);
+                    stringBuilder.AppendFormat("Fecha: {0}          Hora: {1} \n", DateTime.Now.ToShortDateString(), DateTime.Now.ToShortTimeString());
+                    stringBuilder.Append("----------------------------------------------- \n");
+                    stringBuilder.Append("Item              Cant    Precio      Total \n");
+                    foreach (var order in information.ordersList)
+                    {
+                        double totalProduct = order.PriceProduct * order.CountProduct;
+
+                        stringBuilder.AppendFormat("{0}     {1}     {2}     {3} \n", order.NameProduct.ToString(),
+                                                                    order.CountProduct.ToString(), order.PriceProduct.ToString(), totalProduct.ToString());
+                    }
+                    //stringBuilder.Append("MENU PARA LLEVAR   1      S/. 8,00    S/. 8,00 \n");
+                    stringBuilder.Append("----------------------------------------------- \n");
+                    stringBuilder.AppendFormat("Total Venta                           S/. {0} \n", information.total.ToString());
+                    stringBuilder.Append(" \n");
+                    stringBuilder.Append("Condicion de pago: CREDITO \n");
+                    stringBuilder.AppendFormat("DNI              : {0} \n", information.ClientDni.ToString());
+                    stringBuilder.AppendFormat("Nombres          : {0} \n", information.ClientName.ToString());
+
+                    MemoryStream stream = new MemoryStream();
+                    StreamWriter writer = new StreamWriter(stream);
+                    writer.Write(stringBuilder);
+                    writer.Flush();
+                    stream.Position = 0;
+
+                    var printFont = new Font("Arial", 8);
+                    float linesPerPage = 0;
+                    int count = 0;
+                    float yPos = 0;
+                    //float leftMargin = ev.MarginBounds.Left;
+                    float leftMargin = 0;
+                    //float topMargin = ev.MarginBounds.Top;
+                    float topMargin = 0;
+                    string line = null;
+
+                    linesPerPage = e.MarginBounds.Height / printFont.GetHeight(e.Graphics);
+                    StreamReader streamToPrint = new StreamReader(stream);
+
+
+                    while (count < linesPerPage && ((line = streamToPrint.ReadLine()) != null))
+                    {
+                        yPos = topMargin + (count *
+                           printFont.GetHeight(e.Graphics));
+                        e.Graphics.DrawString(line, printFont, Brushes.Black,
+                           leftMargin, yPos, new StringFormat());
+                        count++;
+                    }
+                };
+
+                fileToPrinter.Print();
+
+                response.status = Constantes.StatusOk;
+                return response;
+            }
+            catch (Exception ex)
+            {
+                response.status = ex.Message;
+
+                return response;             
+            }            
         }
     }
 }

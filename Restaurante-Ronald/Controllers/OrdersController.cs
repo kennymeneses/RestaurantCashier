@@ -109,5 +109,22 @@ namespace Restaurante_Ronald.Controllers
                 return StatusCode(400, response);
             }
         }
+
+        [Route("PrintOrders")]
+        [HttpPost]
+        public async Task<IActionResult> PrintOrder(OrderInformation input)
+        {
+            try
+            {
+                var response = await _manejadorOrdenes.PrintOrder(input);
+
+                return Ok(response);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
     }
 }

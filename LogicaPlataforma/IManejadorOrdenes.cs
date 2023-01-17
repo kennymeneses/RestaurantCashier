@@ -16,5 +16,7 @@ namespace LogicaPlataforma
         Task<RespuestaHistoricoActualCliente> ObtenerHistoricoClienteMesActual(string dni);
 
         Task<RespuestaListaMenus> ObtenerMenusList();
+
+        Task<ResponsePrinter> PrintOrder(OrderInformation input);
     }
 }

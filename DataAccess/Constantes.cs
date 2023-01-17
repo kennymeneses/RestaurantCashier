@@ -21,5 +21,7 @@
         public const string StatusError = "Error";
 
         public const string FileDoesntExists = "El archivo xsl no existe en la ruta especificada.";
+
+        public const string PrinterPort = "\\\\localhost\\ESDPRT001";
     }
 }
